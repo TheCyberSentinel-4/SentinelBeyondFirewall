@@ -1048,8 +1048,8 @@
 			<fromaddress></fromaddress>
 		</smtp>
 		<telegram>
-			<api>7047542093:AAHART3Z4qTlPClDbmWk-uLKURaQr-F797I</api>
-			<chatid>-4873411073</chatid>
+			<api>yourapi</api>
+			<chatid>-123456789</chatid>
 			<enabled></enabled>
 		</telegram>
 		<pushover>

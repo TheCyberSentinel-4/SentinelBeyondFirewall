@@ -1,0 +1,133 @@
+#Install and setup promtail:
+
+# 1. Download Promtail (***Version 3.4.2)
+cd /usr/local/bin
+wget https://github.com/grafana/loki/releases/download/v3.4.2/promtail-linux-amd64.zip
+
+# 2. Install unzip if not installed
+sudo apt-get update && sudo apt-get install unzip -y   # Debian/Ubuntu
+
+sudo yum install unzip -y                              # RHEL/CentOS
+
+# 3. Unzip and rename
+unzip promtail-linux-amd64.zip
+mv promtail-linux-amd64 promtail
+chmod +x promtail
+
+# 4. Create Promtail config directory
+sudo mkdir -p /etc/promtail
+
+# 5. Create a user for promtail (optional)
+sudo useradd --no-create-home --shell /bin/false promtail
+
+# 6. Give permissions
+sudo chown promtail:promtail /usr/local/bin/promtail
+sudo chown -R promtail:promtail /etc/promtail
+
+
+--------------------------------------------------------------------
+
+#Promtail config for OPNSENSE
+A. OPNsense VM Promtail Config
+Collect syslog from OPNsense on port 1514.
+
+open file in editor: vi /etc/promtail/promtail-opnsense.yaml
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://<LOKI_SERVER_IP>:3100/loki/api/v1/push
+
+scrape_configs:
+  # Syslog from OPNsense
+  - job_name: opnsense-syslog
+    syslog:
+      listen_address: 0.0.0.0:1514
+      idle_timeout: 60s
+      label_structured_data: yes
+      labels:
+        job: "opnsense"
+    relabel_configs:
+      - source_labels: ['__syslog_message_hostname']
+        target_label: 'host'
+
+
+#Open firewall port 
+$ sudo ufw allow 1514/tcp
+
+or 
+# use firewall-cmd commands
+$sudo firewall-cmd --add-port=1514/tcp --permanent
+$sudo firewall-cmd --list-all  (verify port 1514 is shown in the list)
+--------------------------------------------------------------------
+
+#Promtail config for WEBSERVER(nginx,apache,tomcat --accordingly change path!)
+
+B. Web Server VM Promtail Config
+Collect application logs from /var/log/nginx/*.log and /var/log/myapp/*.log.
+
+File: /etc/promtail/promtail-web.yaml
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://<LOKI_SERVER_IP>:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          __path__: /var/log/nginx/*.log
+
+  - job_name: myapp
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: myapp
+          __path__: /var/log/myapp/*.log
+
+--------------------------------------------------------------------
+
+3. Systemd Service Setup:
+
+Create /etc/systemd/system/promtail.service: 
+
+[Unit]
+Description=Promtail service
+After=network.target
+
+[Service]
+User=promtail
+ExecStart=/usr/local/bin/promtail --config.file=/etc/promtail/promtail-config.yaml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+--------------------------------------------------------------------
+
+4. Enable and Start Promtail
+
+sudo systemctl daemon-reload
+sudo systemctl enable promtail
+sudo systemctl start promtail
+sudo systemctl status promtail
+
+** run command to see whether promtail is setup correctly
+$ sudo /usr/local/bin/promtail --config.file=/etc/promtail-config.yaml   	(config file path for promtail)
+---------------------------------------------------------------------
+
+

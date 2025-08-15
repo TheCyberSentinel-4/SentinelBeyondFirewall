@@ -1,0 +1,166 @@
+
+
+Creating dashboards in grafana:
+
+Here’s how you can query firewall, IDS/IPS, and MySQL logs in Grafana (via Loki) and then create dashboards from them.
+
+This builds on your setup where Promtail sends logs to Loki, and Grafana is connected to Loki as a datasource.
+
+1. Pre-requisites
+Loki is set up as a data source in Grafana:
+
+Grafana → Connections → Data Sources → Add data source → Loki
+
+URL: http://<loki_ip>:3100
+
+Promtail agents are already shipping:
+
+Suricata (IDS/IPS) logs
+
+Firewall logs (from the same box)
+
+MySQL logs
+
+2. Log Labels in Loki
+Promtail attaches labels to logs. Example labels:
+
+Suricata logs:
+
+{job="suricata"}
+Firewall logs:
+
+arduino
+Copy
+Edit
+{job="firewall"}
+MySQL logs:
+
+arduino
+Copy
+Edit
+{job="mysql"}
+You can filter logs by label in Grafana Explore.
+
+3. Query Logs in Grafana
+Step-by-step:
+Open Grafana → Explore.
+
+Choose Loki as the data source.
+
+Use a LogQL query:
+
+Example 1: Firewall logs
+arduino
+Copy
+Edit
+{job="firewall"}
+Example 2: IDS/IPS alerts (Suricata)
+arduino
+Copy
+Edit
+{job="suricata"} |= "alert"
+Example 3: MySQL slow queries
+arduino
+Copy
+Edit
+{job="mysql"} |= "Query_time"
+LogQL supports:
+
+|= for contains
+
+!= for does not contain
+
+|~ for regex match
+
+4. Transform Logs into Metrics (Optional)
+If you want graphs, panels, counts, use LogQL metric functions:
+
+Count Suricata alerts per minute:
+
+arduino
+Copy
+Edit
+count_over_time({job="suricata"} |= "alert" [1m])
+Count MySQL error lines:
+
+arduino
+Copy
+Edit
+count_over_time({job="mysql"} |= "ERROR" [5m])
+5. Create a Dashboard
+Steps:
++ → Dashboard → Add a new panel
+
+Choose Loki as the data source
+
+Enter your LogQL query
+
+For time series visualization, use a count_over_time() style query.
+
+Click Apply.
+
+You can create multiple panels:
+
+Panel 1: Firewall dropped packets (filter “DROP”)
+
+Panel 2: Suricata alerts per minute
+
+Panel 3: Top 10 MySQL error messages (use table visualization)
+
+6. Example Panels
+Panel 1: Suricata Alerts Over Time
+Query:
+
+arduino
+Copy
+Edit
+count_over_time({job="suricata"} |= "alert" [1m])
+Visualization: Time series
+
+Panel 2: MySQL Errors Table
+Query:
+
+arduino
+Copy
+Edit
+{job="mysql"} |= "ERROR"
+Visualization: Table
+
+Panel 3: Firewall Drop/Reject Events
+Query:
+
+arduino
+Copy
+Edit
+{job="firewall"} |= "DROP"
+Visualization: Stat (with count_over_time() if you want a numeric stat).
+
+7. Dashboard Layout
+Arrange panels in grid layout.
+
+Save dashboard.
+
+Optionally, set alerts on panels (Grafana can send emails/Slack).
+
+8. Best Practices
+Use labels correctly in Promtail configs (job, host, service).
+
+For Suricata, prefer logs from eve.json.
+
+For MySQL, parse logs to extract fields like severity and query time (you can enhance this later).
+
+Time Estimate
+Queries in Explore: 30 mins
+
+Building initial dashboard: 30–60 mins
+
+Refining and alerting: additional 1–2 hrs
+
+Next Level
+Do you want me to:
+
+Give you 3 ready-made LogQL queries for panels (firewall, Suricata, MySQL) that you can copy-paste?
+
+Or give you a JSON file of a sample Grafana dashboard (ready to import) with these panels?
+
+Or both?

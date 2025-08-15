@@ -1,0 +1,9 @@
+# Job ID: jme4b7p7c02
+# Event Title: Database Server
+# Hostname: backupsrv
+# Date/Time: 2025/08/09 19:17:42 (GMT+5.5)
+
+mysqldump: Got error: 2002: Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2) when trying to connect
+
+# Job completed successfully at 2025/08/09 19:17:42 (GMT+5.5).
+# End of log.

@@ -1,0 +1,49 @@
+Promtail (Ship logs)
+	- Promtail is an agent that tails log files and pushes them to Loki.
+	- Promtail can be configured to collect logs from various sources 
+	such as local files, systemd, or Docker containers, and then send them to Loki.
+
+Graffana (Visualize And Monitor Logs)
+	- Query and Visualize logs from Loki
+
+Loki (Store and Query logs)
+	- Log Storage area, sent by Promtail!
+
+-$TO DO: 
+	[] to daemonize (create service file) for both loki and promtail!
+
+##CONFIGS------------------------------------------------
+	
+	
+1.Loki config	
+
+2.Promtail
+
+3.Alloy 
+	config-file path: /etc/alloy/config.alloy
+	bin file path: /usr/local/bin/alloy
+
+
+
+--------------!CONFIGS-----------------------------------
+
+
+##LINKS:
+grafana config: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/
+
+Loki config default https://raw.githubusercontent.com/grafana/loki/v2.8.6/cmd/loki/loki-local-config.yaml
+Promtail config default -> https://raw.githubusercontent.com/grafana/loki/main/clients/cmd/promtail/promtail-local-config.yaml
+
+alloy: https://github.com/grafana/alloy/releases/download/v1.10.0/alloy-linux-amd64.zip
+
+----------
+
+##firewall-cmd Commands--add-port
+
+#add-port
+firewall-cmd --add-port=<port-number>/<type>
+
+#List open ports
+	sudo firewall-cmd --list-ports   
+#check specific open-port
+	sudo firewall-cmd --query-port=22/tcp   
